@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>十字神斬：因式風暴 | 國二數學十字交乘法教學網頁遊戲</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), inset 0 0 10px rgba(16, 185, 129, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.8), inset 0 0 15px rgba(16, 185, 129, 0.4); }
+    }
+    @keyframes slashAnim {
+      0% { transform: scale(0.2) rotate(-45deg); opacity: 0; }
+      50% { transform: scale(1.4) rotate(0deg); opacity: 1; }
+      100% { transform: scale(2) rotate(45deg); opacity: 0; }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .slot-match { animation: pulseGlow 1.5s infinite; }
+    .shake-anim { animation: shake 0.4s ease-in-out; }
+    .slash-effect {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 160%;
+      height: 8px;
+      background: linear-gradient(90deg, transparent, #fff, #38bdf8, transparent);
+      box-shadow: 0 0 25px #38bdf8, 0 0 45px #fff;
+      transform-origin: center;
+      pointer-events: none;
+      z-index: 50;
+      animation: slashAnim 0.45s ease-out forwards;
+    }
+    /* 自訂捲軸 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none overflow-x-hidden">
+
+  <!-- ==========================================
+       全站頂部導覽列 (Global Navigation Bar)
+  ========================================== -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40 px-4 py-2.5 flex items-center justify-between">
+    <div class="flex items-center gap-2 cursor-pointer" id="navHome">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-cyan-500/30 text-xl">
+        ⚔️
+      </div>
+      <div>
+        <h1 class="text-sm md:text-lg font-black tracking-wide bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">
+          十字神斬：因式風暴
+        </h1>
+        <p class="text-[10px] md:text-xs text-slate-400">國二數學・十字交乘法特訓網頁</p>
+      </div>
+    </div>
+
+    <!-- 頂部功能快捷按鈕 -->
+    <div class="flex items-center gap-2 md:gap-4 text-xs md:text-sm">
+      <div id="userStarsDisplay" class="hidden sm:flex items-center gap-1 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
+        <span class="text-amber-400">⭐</span>
+        <span id="totalStarsText" class="font-bold text-amber-300">0</span>
+      </div>
+
+      <button id="btnSound" class="p-1.5 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-xs flex items-center gap-1" title="開關音效">
+        <span id="soundIcon">🔊</span>
+        <span class="hidden md:inline text-[11px]">音效</span>
+      </button>
+
+      <button id="btnOpenTeacher" class="px-2.5 py-1 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white font-semibold text-xs transition flex items-center gap-1">
+        👩‍🏫 教師出題
+      </button>
+
+      <button id="btnTutorial" class="px-2.5 py-1 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white font-semibold text-xs transition flex items-center gap-1">
+        📖 口訣秘笈
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       VIEW 1：遊戲首頁 (Landing / Title Screen)
+  ========================================== -->
+  <section id="viewLanding" class="flex-1 flex flex-col items-center justify-center p-4 md:p-8 text-center max-w-4xl mx-auto w-full">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold mb-4 animate-pulse">
+      ✨ 專為 108 課綱八年級上學期設計・免費免安裝
+    </div>
+
+    <h2 class="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight mb-4 bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300 bg-clip-text text-transparent">
+      把十字交乘，<br class="sm:hidden" />玩成爽快討伐戰！
+    </h2>
+
+    <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto mb-8 leading-relaxed">
+      告別枯燥的考卷試誤！裝備數字因數、動態交錯光線即時驗證、斬擊破防扣血，輕鬆掌握「左拆首項、右拆常數、交叉相乘湊中間」。
+    </p>
+
+    <!-- 模式選擇大卡片 -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mb-8">
+      <!-- 冒險模式 -->
+      <div id="cardStartAdventure" class="group bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 hover:border-cyan-400 rounded-2xl p-5 cursor-pointer transition transform hover:-translate-y-1.5 shadow-xl text-left">
+        <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 text-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
+          🗺️
+        </div>
+        <h3 class="text-base font-bold text-white mb-1 group-hover:text-cyan-300 transition">冒險闖關模式</h3>
+        <p class="text-xs text-slate-400">4大世界、12道精心設計的階梯式關卡，從純正數到雙負與首項進階。</p>
+        <div class="mt-4 text-xs font-bold text-cyan-400 flex items-center gap-1">
+          開始冒險 &rarr;
+        </div>
+      </div>
+
+      <!-- 60秒無限狂斬 -->
+      <div id="cardStartRush" class="group bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 hover:border-amber-400 rounded-2xl p-5 cursor-pointer transition transform hover:-translate-y-1.5 shadow-xl text-left">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 text-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
+          ⏱️
+        </div>
+        <h3 class="text-base font-bold text-white mb-1 group-hover:text-amber-300 transition">60秒極限狂斬</h3>
+        <p class="text-xs text-slate-400">限時隨機出題，連續答對觸發 Combo 爆擊，挑戰全班最高分！</p>
+        <div class="mt-4 text-xs font-bold text-amber-400 flex items-center gap-1">
+          極速挑戰 &rarr;
+        </div>
+      </div>
+
+      <!-- 教師出題 / 班級專區 -->
+      <div id="cardStartTeacher" class="group bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 hover:border-emerald-400 rounded-2xl p-5 cursor-pointer transition transform hover:-translate-y-1.5 shadow-xl text-left">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 text-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
+          👩‍🏫
+        </div>
+        <h3 class="text-base font-bold text-white mb-1 group-hover:text-emerald-300 transition">自訂題目分享</h3>
+        <p class="text-xs text-slate-400">老師或同學可輸入課本題目，一鍵生成專屬連結或題目碼給全班挑戰。</p>
+        <div class="mt-4 text-xs font-bold text-emerald-400 flex items-center gap-1">
+          出題分享 &rarr;
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部特性標籤 -->
+    <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
+      <span class="flex items-center gap-1">⚡ 原生 Web Audio 斬擊音效</span>
+      <span class="flex items-center gap-1">📱 平板/手機/電腦 RWD 自適應</span>
+      <span class="flex items-center gap-1">💾 本地進度自動儲存</span>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       VIEW 2：關卡地圖 (Stage Map Screen)
+  ========================================== -->
+  <section id="viewMap" class="hidden flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl md:text-2xl font-black text-white flex items-center gap-2">
+          <span>🗺️ 因式冒險世界地圖</span>
+        </h2>
+        <p class="text-xs text-slate-400">點選已解鎖的關卡出征討伐！</p>
+      </div>
+      <button id="btnBackToHomeFromMap" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+        &larr; 返回首頁
+      </button>
+    </div>
+
+    <!-- 關卡列表 (4大章節) -->
+    <div class="space-y-6" id="stagesContainer">
+      <!-- 動態生成 4 個章節與 12 個關卡 -->
+    </div>
+  </section>
+
+  <!-- ==========================================
+       VIEW 3：主遊戲戰鬥視窗 (Battle Arena)
+  ========================================== -->
+  <section id="viewBattle" class="hidden flex-1 max-w-4xl w-full mx-auto p-3 md:p-6 flex flex-col gap-4">
+    
+    <!-- 戰鬥頂部控制列 -->
+    <div class="flex items-center justify-between text-xs text-slate-400">
+      <button id="btnExitBattle" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+        &larr; 離開戰鬥
+      </button>
+      <div id="currentStageBadge" class="font-bold text-cyan-400 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-800">
+        關卡 1-1：微光森林
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-amber-400">🔥 Combo: <b id="comboText" class="text-white">0</b></span>
+        <span class="text-emerald-400">🏆 得分: <b id="scoreText" class="text-white font-mono">0</b></span>
+      </div>
+    </div>
+
+    <!-- 1. 怪物遭遇區 -->
+    <div id="battleCard" class="relative overflow-hidden bg-gradient-to-b from-slate-800/90 to-slate-900/90 border border-slate-700/80 rounded-2xl p-4 shadow-xl">
+      <!-- 斬擊刀光容器 -->
+      <div id="slashContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <!-- 怪物頭像與血條 -->
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <div id="monsterAvatar" class="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-rose-500 flex items-center justify-center text-3xl shadow-lg border border-purple-400/40 transform transition hover:scale-105">
+            👾
+          </div>
+          <div class="flex-1 sm:w-48">
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span id="monsterName" class="font-bold text-slate-200">二項暗影魔</span>
+              <span id="monsterHpLabel" class="text-slate-400 font-mono">HP 100/100</span>
+            </div>
+            <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-700">
+              <div id="hpBar" class="bg-gradient-to-r from-rose-500 to-amber-500 h-full w-full transition-all duration-300"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 題目多項式展示 -->
+        <div class="text-center sm:text-right flex-1">
+          <div class="text-[11px] text-cyan-400 font-bold uppercase tracking-wider mb-0.5">TARGET POLYNOMIAL (因式分解目標)</div>
+          <div id="targetPolynomial" class="text-2xl sm:text-3xl md:text-4xl font-black font-mono tracking-tight text-white drop-shadow-[0_0_12px_rgba(56,189,248,0.5)]">
+            x² + 5x + 6
+          </div>
+        </div>
+      </div>
+
+      <!-- 60秒模式計時條 -->
+      <div id="rushTimerBar" class="hidden mt-3 pt-2 border-t border-slate-700/50 flex items-center justify-between text-xs text-amber-400 font-semibold">
+        <span>剩餘時間：<b id="rushSeconds">60</b> 秒</span>
+        <span>已斬殺魔怪：<b id="rushKills">0</b> 隻</span>
+      </div>
+    </div>
+
+    <!-- 2. 十字交乘召喚陣 -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm md:text-base font-bold text-slate-300 flex items-center gap-2">
+          <span>⚡ 十字交乘召喚陣</span>
+          <span class="text-xs font-normal text-slate-400 hidden sm:inline">(點擊下方手牌裝備到右側常數欄)</span>
+        </h3>
+        <div class="flex items-center gap-2">
+          <button id="btnHint" class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 text-xs font-semibold flex items-center gap-1 transition">
+            💡 因數透視鏡
+          </button>
+          <button id="btnClear" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700 text-xs transition">
+            重設法陣
+          </button>
+        </div>
+      </div>
+
+      <!-- 十字矩陣主面板 -->
+      <div class="relative max-w-md mx-auto my-2">
+        <!-- SVG 交叉光束線條 -->
+        <svg id="crossSvg" class="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 400 200">
+          <line id="line1" x1="100" y1="45" x2="300" y2="155" stroke="#38bdf8" stroke-width="3" stroke-dasharray="6,6" opacity="0.6"/>
+          <line id="line2" x1="100" y1="155" x2="300" y2="45" stroke="#818cf8" stroke-width="3" stroke-dasharray="6,6" opacity="0.6"/>
+        </svg>
+
+        <!-- 卡槽四宮格 -->
+        <div class="grid grid-cols-2 gap-x-12 sm:gap-x-16 gap-y-5 relative z-20">
+          <!-- 左上：a1 x -->
+          <div class="flex flex-col items-center">
+            <span class="text-[10px] text-slate-400 mb-1">首項分解 ①</span>
+            <div id="slot-a1" class="slot w-28 h-14 sm:w-32 sm:h-16 rounded-xl border-2 border-dashed border-cyan-500/50 bg-slate-800/80 flex items-center justify-center font-mono text-lg font-bold text-cyan-300 cursor-pointer hover:border-cyan-400 transition" data-slot="a1">
+              x
+            </div>
+          </div>
+
+          <!-- 右上：c1 -->
+          <div class="flex flex-col items-center">
+            <span class="text-[10px] text-slate-400 mb-1">常數項分解 ①</span>
+            <div id="slot-c1" class="slot w-28 h-14 sm:w-32 sm:h-16 rounded-xl border-2 border-dashed border-indigo-500/50 bg-slate-800/80 flex items-center justify-center font-mono text-lg font-bold text-indigo-300 cursor-pointer hover:border-indigo-400 transition" data-slot="c1">
+              ?
+            </div>
+          </div>
+
+          <!-- 左下：a2 x -->
+          <div class="flex flex-col items-center">
+            <span class="text-[10px] text-slate-400 mb-1">首項分解 ②</span>
+            <div id="slot-a2" class="slot w-28 h-14 sm:w-32 sm:h-16 rounded-xl border-2 border-dashed border-cyan-500/50 bg-slate-800/80 flex items-center justify-center font-mono text-lg font-bold text-cyan-300 cursor-pointer hover:border-cyan-400 transition" data-slot="a2">
+              x
+            </div>
+          </div>
+
+          <!-- 右下：c2 -->
+          <div class="flex flex-col items-center">
+            <span class="text-[10px] text-slate-400 mb-1">常數項分解 ②</span>
+            <div id="slot-c2" class="slot w-28 h-14 sm:w-32 sm:h-16 rounded-xl border-2 border-dashed border-indigo-500/50 bg-slate-800/80 flex items-center justify-center font-mono text-lg font-bold text-indigo-300 cursor-pointer hover:border-indigo-400 transition" data-slot="c2">
+              ?
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 即時交叉運算顯示條 -->
+      <div id="verificationBox" class="mt-4 bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col md:flex-row items-center justify-between gap-2 text-xs md:text-sm font-mono transition">
+        <div class="flex items-center gap-3">
+          <span class="text-slate-400">⚡ 交叉相乘計算：</span>
+          <span id="crossEquation" class="text-slate-300 font-semibold">(等待裝備因數...)</span>
+        </div>
+        <div id="crossResultBadge" class="px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold">
+          尚未齊全
+        </div>
+      </div>
+
+      <!-- 發動十字神斬按鈕 -->
+      <button id="btnSlash" class="mt-4 w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-black text-base md:text-lg tracking-wider shadow-lg shadow-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition transform active:scale-[0.98] flex items-center justify-center gap-2" disabled>
+        <span>⚔️ 發動十字神斬！ (EXECUTE)</span>
+      </button>
+
+      <!-- 錯誤反饋 / 提示條 -->
+      <div id="feedbackNotice" class="hidden mt-2 p-2.5 rounded-lg text-xs font-medium text-center"></div>
+    </div>
+
+    <!-- 3. 因數卡牌手牌庫 (Inventory) -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+          <span>📦 因數卡槽庫存</span>
+          <span class="text-[11px] font-normal text-slate-400">(點選卡片放入，卡片右上角「±」可切換正負)</span>
+        </span>
+        <button id="btnFlipAll" class="text-[11px] text-cyan-400 hover:text-cyan-300 underline font-semibold">
+          切換全部正負號
+        </button>
+      </div>
+
+      <div id="cardsContainer" class="flex flex-wrap gap-2.5 min-h-[56px] items-center">
+        <!-- 動態產生手牌 -->
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ==========================================
+       VIEW 4：教師出題與自訂模式 (Teacher View)
+  ========================================== -->
+  <section id="viewTeacher" class="hidden flex-1 max-w-3xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl md:text-2xl font-black text-emerald-400 flex items-center gap-2">
+          <span>👩‍🏫 教師自訂題庫與分享專區</span>
+        </h2>
+        <p class="text-xs text-slate-400">快速出題給學生練習，或生成專屬網址讓全班一鍵開啟！</p>
+      </div>
+      <button id="btnBackToHomeFromTeacher" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+        &larr; 返回首頁
+      </button>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+      
+      <!-- 方式一：直接設定括號解 (推薦老師使用) -->
+      <div>
+        <h3 class="text-sm font-bold text-slate-200 mb-2 flex items-center gap-1.5">
+          <span>🎯 方法 A：直接設定答案括號 (系統自動展開多項式)</span>
+        </h3>
+        <p class="text-xs text-slate-400 mb-3">例如設定為 $(x + 3)(x - 5)$，系統自動算出 $x^2 - 2x - 15$ 作為魔怪題目：</p>
+        
+        <div class="flex flex-wrap items-center gap-2 text-sm font-mono bg-slate-950 p-4 rounded-xl border border-slate-800">
+          <span class="text-slate-400">(</span>
+          <input id="inputA1" type="number" value="1" class="w-12 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-cyan-300 text-center font-bold" min="1" max="5">
+          <span class="text-slate-400">x +</span>
+          <input id="inputC1" type="number" value="3" class="w-16 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-indigo-300 text-center font-bold">
+          <span class="text-slate-400">) (</span>
+          <input id="inputA2" type="number" value="1" class="w-12 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-cyan-300 text-center font-bold" min="1" max="5">
+          <span class="text-slate-400">x +</span>
+          <input id="inputC2" type="number" value="-5" class="w-16 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-indigo-300 text-center font-bold">
+          <span class="text-slate-400">)</span>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between">
+          <div class="text-xs text-slate-400">
+            預計生成題目：<b id="previewCustomPoly" class="text-cyan-300 font-mono text-sm">x² - 2x - 15</b>
+          </div>
+          <button id="btnLaunchCustomProblem" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+            ⚔️ 直接出征此題
+          </button>
+        </div>
+      </div>
+
+      <hr class="border-slate-800">
+
+      <!-- 網址分享區 -->
+      <div>
+        <h3 class="text-sm font-bold text-slate-200 mb-2 flex items-center gap-1.5">
+          <span>🔗 一鍵複製分享網址給學生</span>
+        </h3>
+        <p class="text-xs text-slate-400 mb-2">學生只要打開此網址，即可直接載入這道自訂題目挑戰：</p>
+        <div class="flex items-center gap-2">
+          <input id="shareUrlInput" type="text" readonly class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 font-mono select-all">
+          <button id="btnCopyShareUrl" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition whitespace-nowrap">
+            📋 複製連結
+          </button>
+        </div>
+        <p id="copyStatusText" class="text-[11px] text-emerald-400 mt-1 hidden">✅ 連結已成功複製至剪貼簿！</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==========================================
+       MODALS (彈出視窗)
+  ========================================== -->
+
+  <!-- 🏆 結算獎勵 Modal (Stage Victory) -->
+  <div id="victoryModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl relative transform transition animate-bounce-short">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-amber-400 to-emerald-400 flex items-center justify-center text-3xl shadow-lg">
+        🏆
+      </div>
+      <h3 class="text-xl font-black text-white mb-1">關卡完美通關！</h3>
+      <p id="victorySubtitle" class="text-xs text-slate-400 mb-4">成功擊破魔怪，因式分解掌握度提升！</p>
+
+      <!-- 獲得星星 -->
+      <div class="flex items-center justify-center gap-2 text-3xl my-3">
+        <span class="text-amber-400">⭐</span>
+        <span class="text-amber-400">⭐</span>
+        <span class="text-amber-400">⭐</span>
+      </div>
+
+      <!-- 公式總結卡 -->
+      <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 text-xs font-mono my-4 space-y-1">
+        <div class="text-slate-400 text-[11px]">【正式解題數學橫式】</div>
+        <div id="victoryFormula" class="text-cyan-300 font-bold text-sm tracking-wide">
+          (x + 2)(x + 3)
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btnVictoryToMap" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition">
+          返回地圖
+        </button>
+        <button id="btnVictoryNext" class="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-black rounded-xl text-xs transition shadow-lg shadow-emerald-500/20">
+          下一關 &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 💡 因數透視鏡 Modal -->
+  <div id="hintModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-5 max-w-sm w-full shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-sm font-bold text-amber-300 flex items-center gap-1.5">
+          💡 因數透視水晶
+        </h3>
+        <button id="btnCloseHint" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+      </div>
+      <div class="py-3 text-xs text-slate-300 space-y-2">
+        <p>目前題目的常數項為：<b id="hintConstVal" class="text-cyan-300 font-mono text-sm">+6</b></p>
+        <p>所有可能拆解的整數因數配對：</p>
+        <div id="hintPairsList" class="bg-slate-950 p-2.5 rounded-lg font-mono text-amber-200/90 text-center space-y-1 max-h-36 overflow-y-auto">
+          <!-- 動態載入因數對 -->
+        </div>
+        <p class="text-slate-400 text-[11px] mt-2">
+          🎯 思考關鍵：這幾組中，哪一組「交叉相乘後相加」會等於中間項的 <b id="hintMidVal" class="text-emerald-400 font-mono">+5</b> 呢？
+        </p>
+      </div>
+      <button id="btnConfirmHint" class="w-full mt-2 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg text-xs transition">
+        領悟了，回戰場！
+      </button>
+    </div>
+  </div>
+
+  <!-- 📖 國二秘笈 (教學導覽) Modal -->
+  <div id="tutorialModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl p-6 max-w-md w-full shadow-2xl max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base font-bold text-indigo-300 flex items-center gap-1.5">
+          📖 國二十字交乘法口訣秘笈
+        </h3>
+        <button id="btnCloseTutorial" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+      </div>
+      <div class="py-3 text-xs text-slate-300 space-y-3 leading-relaxed">
+        <div class="bg-indigo-950/40 border border-indigo-500/30 p-3 rounded-xl">
+          <p class="font-bold text-indigo-200 text-sm mb-1">【三句神訣】</p>
+          <ul class="list-disc pl-4 space-y-1 text-slate-200">
+            <li><b class="text-cyan-300">左邊拆二次項</b>：例如 $x^2 = x \times x$</li>
+            <li><b class="text-purple-300">右邊拆常數項</b>：例如 $6 = (+2) \times (+3)$</li>
+            <li><b class="text-amber-300">交叉相乘相加湊中間</b>：$(x \cdot 3) + (x \cdot 2) = 5x$！</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+          <p class="font-bold text-slate-200">【正負號心法】</p>
+          <p>1. <span class="text-emerald-400 font-semibold">常數為正 (+)</span>：兩數必定「同號」（全正或全負）。若中間項是負的，代表「負負得正」！</p>
+          <p>2. <span class="text-rose-400 font-semibold">常數為負 (-)</span>：兩數必定「一正一負」，中間項的值代表兩數相抵消後的差！</p>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+          <p class="font-bold text-slate-200">【橫式答案怎麼寫？】</p>
+          <p>上下左右排好後，<b>橫著裝進括號裡</b>：</p>
+          <div class="text-center font-mono text-cyan-300 font-bold bg-slate-900 py-1.5 rounded">
+            ( x + 2 ) ( x + 3 )
+          </div>
+        </div>
+      </div>
+      <button id="btnGotTutorial" class="w-full mt-2 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs transition">
+        我學會了，開始闖關！
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       JAVASCRIPT LOGIC
+  ========================================== -->
+  <script>
+    /* ========================================================
+       1. 音效引擎 (Web Audio API Synthesizer)
+    ======================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playClick() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(480, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+      playMatchResonance() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99].forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.05);
+          gain.gain.setValueAtTime(0.1, this.ctx.currentTime + i * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.05 + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + i * 0.05);
+          osc.stop(this.ctx.currentTime + i * 0.05 + 0.3);
+        });
+      }
+      playSlash() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const bufferSize = this.ctx.sampleRate * 0.15;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(3200, this.ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(700, this.ctx.currentTime + 0.15);
+        const noiseGain = this.ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(this.ctx.destination);
+        noise.start();
+
+        const bass = this.ctx.createOscillator();
+        const bassGain = this.ctx.createGain();
+        bass.type = 'sine';
+        bass.frequency.setValueAtTime(160, this.ctx.currentTime);
+        bass.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.25);
+        bassGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        bassGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        bass.connect(bassGain);
+        bassGain.connect(this.ctx.destination);
+        bass.start();
+        bass.stop(this.ctx.currentTime + 0.25);
+      }
+      playError() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(130, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+      }
+      playVictory() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.12);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.12 + 0.4);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + i * 0.12);
+          osc.stop(this.ctx.currentTime + i * 0.12 + 0.4);
+        });
+      }
+    }
+    const sound = new SoundEngine();
+
+    /* ========================================================
+       2. 關卡資料庫 (12 關漸進梯隊)
+    ======================================================== */
+    const STAGE_CHAPTERS = [
+      {
+        id: 1,
+        title: "第一章：微光森林 (純陽入門)",
+        theme: "全正數入門，掌握相乘與相加之和",
+        stages: [
+          { id: "1-1", name: "史萊姆小試身手", a1: 1, a2: 1, c1: 2, c2: 3, mon: "🟢 綠史萊姆" },
+          { id: "1-2", name: "野狼群的夾擊", a1: 1, a2: 1, c1: 3, c2: 4, mon: "🐺 森林狼" },
+          { id: "1-3", name: "巨木守護者", a1: 1, a2: 1, c1: 4, c2: 5, mon: "🌲 巨木樹精" }
+        ]
+      },
+      {
+        id: 2,
+        title: "第二章：暗夜地窟 (負負得正)",
+        theme: "常數為正，一次項為負，兩因數皆為負數",
+        stages: [
+          { id: "2-1", name: "地穴潛伏者", a1: 1, a2: 1, c1: -2, c2: -3, mon: "🦇 暗蝠怪" },
+          { id: "2-2", name: "雙負石像鬼", a1: 1, a2: 1, c1: -3, c2: -5, mon: "🗿 石像鬼" },
+          { id: "2-3", name: "暗夜巨蜘蛛", a1: 1, a2: 1, c1: -4, c2: -6, mon: "🕷️ 巨影蛛" }
+        ]
+      },
+      {
+        id: 3,
+        title: "第三章：冰火雙極 (一正一負)",
+        theme: "常數為負，兩因數異號，互相抵扣中間差",
+        stages: [
+          { id: "3-1", name: "熔岩霜火獸", a1: 1, a2: 1, c1: 4, c2: -2, mon: "🧊 冰火獸" },
+          { id: "3-2", name: "雙極幽靈", a1: 1, a2: 1, c1: -6, c2: 3, mon: "👻 陰陽魅影" },
+          { id: "3-3", name: "混沌元素使", a1: 1, a2: 1, c1: 7, c2: -3, mon: "⚡ 混沌領主" }
+        ]
+      },
+      {
+        id: 4,
+        title: "第四章：泰坦巨神殿 (首項 a>1)",
+        theme: "二次項係數拆解，首項與常數項雙重考驗",
+        stages: [
+          { id: "4-1", name: "青銅傀儡", a1: 2, a2: 1, c1: 3, c2: 1, mon: "🤖 泰坦兵" },
+          { id: "4-2", name: "黑曜石守衛", a1: 2, a2: 1, c1: 1, c2: 3, mon: "🛡️ 鐵甲衛" },
+          { id: "4-3", name: "十字終焉巨龍", a1: 3, a2: 1, c1: -2, c2: -1, mon: "🐉 終焉魔龍" }
+        ]
+      }
+    ];
+
+    /* ========================================================
+       3. 遊戲狀態與存檔 (LocalStorage)
+    ======================================================== */
+    const state = {
+      currentView: 'landing',
+      gameMode: 'adventure',
+      activeStageIndex: null,
+      completedStages: JSON.parse(localStorage.getItem('cross_factor_completed') || '{}'),
+      totalStars: parseInt(localStorage.getItem('cross_factor_stars') || '0'),
+      score: 0,
+      combo: 0,
+      currentProblem: null,
+      slots: { a1: null, a2: null, c1: null, c2: null },
+      inventory: [],
+      rushTimer: null,
+      rushTimeLeft: 60,
+      rushKills: 0
+    };
+
+    /* ========================================================
+       4. 畫面切換 (Router)
+    ======================================================== */
+    const views = {
+      landing: document.getElementById('viewLanding'),
+      map: document.getElementById('viewMap'),
+      battle: document.getElementById('viewBattle'),
+      teacher: document.getElementById('viewTeacher')
+    };
+
+    function switchView(target) {
+      sound.playClick();
+      state.currentView = target;
+      Object.keys(views).forEach(key => {
+        if (key === target) views[key].classList.remove('hidden');
+        else views[key].classList.add('hidden');
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (target === 'map') renderStageMap();
+      if (target === 'teacher') updateTeacherShareUrl();
+    }
+
+    document.getElementById('navHome').addEventListener('click', () => switchView('landing'));
+    document.getElementById('cardStartAdventure').addEventListener('click', () => switchView('map'));
+    document.getElementById('btnBackToHomeFromMap').addEventListener('click', () => switchView('landing'));
+    document.getElementById('btnBackToHomeFromTeacher').addEventListener('click', () => switchView('landing'));
+    document.getElementById('btnOpenTeacher').addEventListener('click', () => switchView('teacher'));
+    document.getElementById('cardStartTeacher').addEventListener('click', () => switchView('teacher'));
+    document.getElementById('btnExitBattle').addEventListener('click', () => {
+      if (state.rushTimer) clearInterval(state.rushTimer);
+      if (state.gameMode === 'adventure') switchView('map');
+      else switchView('landing');
+    });
+
+    document.getElementById('cardStartRush').addEventListener('click', () => {
+      state.gameMode = 'rush';
+      switchView('battle');
+      startRushMode();
+    });
+
+    /* ========================================================
+       5. 關卡地圖渲染 (Stage Map Render)
+    ======================================================== */
+    function renderStageMap() {
+      const container = document.getElementById('stagesContainer');
+      container.innerHTML = '';
+
+      STAGE_CHAPTERS.forEach((chapter) => {
+        const chapterDiv = document.createElement('div');
+        chapterDiv.className = "bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 shadow-lg";
+
+        const headerHtml = `
+          <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
+            <div>
+              <h3 class="text-sm md:text-base font-bold text-cyan-300">${chapter.title}</h3>
+              <p class="text-[11px] text-slate-400">${chapter.theme}</p>
+            </div>
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
+              第 ${chapter.id} 章
+            </span>
+          </div>
+        `;
+
+        const stagesGrid = document.createElement('div');
+        stagesGrid.className = "grid grid-cols-1 sm:grid-cols-3 gap-3";
+
+        chapter.stages.forEach(stg => {
+          const isDone = !!state.completedStages[stg.id];
+          const stgBtn = document.createElement('button');
+          stgBtn.className = `p-3 rounded-xl border text-left transition transform hover:-translate-y-1 flex flex-col justify-between ${
+            isDone
+              ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-500/40 hover:border-amber-400'
+              : 'bg-slate-800/80 border-slate-700 hover:border-cyan-400'
+          }`;
+
+          stgBtn.innerHTML = `
+            <div class="flex items-center justify-between w-full mb-1">
+              <span class="text-[10px] font-mono text-cyan-400 font-bold">STAGE ${stg.id}</span>
+              <span>${isDone ? '⭐ ⭐ ⭐' : '⚪ ⚪ ⚪'}</span>
+            </div>
+            <div class="font-bold text-sm text-white mb-1">${stg.name}</div>
+            <div class="text-[11px] text-slate-400">${stg.mon}</div>
+          `;
+
+          stgBtn.addEventListener('click', () => {
+            state.gameMode = 'adventure';
+            state.activeStageIndex = stg;
+            switchView('battle');
+            loadStageProblem(stg);
+          });
+
+          stagesGrid.appendChild(stgBtn);
+        });
+
+        chapterDiv.innerHTML = headerHtml;
+        chapterDiv.appendChild(stagesGrid);
+        container.appendChild(chapterDiv);
+      });
+
+      document.getElementById('totalStarsText').textContent = state.totalStars;
+      document.getElementById('userStarsDisplay').classList.remove('hidden');
+    }
+
+    /* ========================================================
+       6. 戰鬥邏輯與出題
+    ======================================================== */
+    const dom = {
+      targetPolynomial: document.getElementById('targetPolynomial'),
+      monsterName: document.getElementById('monsterName'),
+      monsterAvatar: document.getElementById('monsterAvatar'),
+      monsterHpLabel: document.getElementById('monsterHpLabel'),
+      hpBar: document.getElementById('hpBar'),
+      scoreText: document.getElementById('scoreText'),
+      comboText: document.getElementById('comboText'),
+      crossEquation: document.getElementById('crossEquation'),
+      crossResultBadge: document.getElementById('crossResultBadge'),
+      btnSlash: document.getElementById('btnSlash'),
+      cardsContainer: document.getElementById('cardsContainer'),
+      feedbackNotice: document.getElementById('feedbackNotice'),
+      battleCard: document.getElementById('battleCard'),
+      slashContainer: document.getElementById('slashContainer'),
+      rushTimerBar: document.getElementById('rushTimerBar'),
+      rushSeconds: document.getElementById('rushSeconds'),
+      rushKills: document.getElementById('rushKills'),
+      btnHint: document.getElementById('btnHint'),
+      hintModal: document.getElementById('hintModal'),
+      hintConstVal: document.getElementById('hintConstVal'),
+      hintMidVal: document.getElementById('hintMidVal'),
+      hintPairsList: document.getElementById('hintPairsList'),
+      btnCloseHint: document.getElementById('btnCloseHint'),
+      btnConfirmHint: document.getElementById('btnConfirmHint'),
+      btnTutorial: document.getElementById('btnTutorial'),
+      tutorialModal: document.getElementById('tutorialModal'),
+      btnCloseTutorial: document.getElementById('btnCloseTutorial'),
+      btnGotTutorial: document.getElementById('btnGotTutorial'),
+      btnSound: document.getElementById('btnSound'),
+      soundIcon: document.getElementById('soundIcon'),
+      btnClear: document.getElementById('btnClear'),
+      btnFlipAll: document.getElementById('btnFlipAll'),
+      slotA1: document.getElementById('slot-a1'),
+      slotA2: document.getElementById('slot-a2'),
+      slotC1: document.getElementById('slot-c1'),
+      slotC2: document.getElementById('slot-c2'),
+      line1: document.getElementById('line1'),
+      line2: document.getElementById('line2'),
+      currentStageBadge: document.getElementById('currentStageBadge'),
+      victoryModal: document.getElementById('victoryModal'),
+      victoryFormula: document.getElementById('victoryFormula'),
+      btnVictoryToMap: document.getElementById('btnVictoryToMap'),
+      btnVictoryNext: document.getElementById('btnVictoryNext')
+    };
+
+    function formatPoly(a, b, c) {
+      let res = "";
+      if (a === 1) res += "x²";
+      else if (a === -1) res += "-x²";
+      else res += `${a}x²`;
+
+      if (b > 0) res += ` + ${b === 1 ? '' : b}x`;
+      else if (b < 0) res += ` - ${Math.abs(b) === 1 ? '' : Math.abs(b)}x`;
+
+      if (c > 0) res += ` + ${c}`;
+      else if (c < 0) res += ` - ${Math.abs(c)}`;
+      return res;
+    }
+
+    function loadStageProblem(stg) {
+      dom.rushTimerBar.classList.add('hidden');
+      dom.currentStageBadge.textContent = `第 ${stg.id} 關：${stg.name}`;
+      dom.monsterName.textContent = stg.mon.split(' ')[1] || stg.name;
+      dom.monsterAvatar.textContent = stg.mon.split(' ')[0] || '👾';
+      initProblemWithValues(stg.a1, stg.a2, stg.c1, stg.c2);
+    }
+
+    function initProblemWithValues(a1, a2, c1, c2) {
+      const A = a1 * a2;
+      const B = a1 * c2 + a2 * c1;
+      const C = c1 * c2;
+
+      state.currentProblem = { a1, a2, c1, c2, A, B, C };
+      dom.targetPolynomial.textContent = formatPoly(A, B, C);
+      state.monsterHp = 100;
+      dom.hpBar.style.width = '100%';
+      dom.monsterHpLabel.textContent = 'HP 100/100';
+
+      state.slots = { a1: a1, a2: a2, c1: null, c2: null };
+      dom.slotA1.textContent = a1 === 1 ? "x" : `${a1}x`;
+      dom.slotA2.textContent = a2 === 1 ? "x" : `${a2}x`;
+      dom.slotC1.textContent = "?";
+      dom.slotC2.textContent = "?";
+
+      generateInventoryCards(c1, c2, C);
+      dom.feedbackNotice.classList.add('hidden');
+      updateVerification();
+    }
+
+    function generateInventoryCards(c1, c2, C) {
+      const cards = [c1, c2];
+      const absC = Math.abs(C);
+      const allDivisors = [];
+      for (let i = 1; i <= absC; i++) {
+        if (absC % i === 0) {
+          allDivisors.push(i);
+          allDivisors.push(-i);
+        }
+      }
+      allDivisors.forEach(d => {
+        if (!cards.includes(d) && cards.length < 6) cards.push(d);
+      });
+      cards.sort(() => Math.random() - 0.5);
+
+      state.inventory = cards.map((val, idx) => ({
+        id: `card-${idx}-${Date.now()}`,
+        value: val
+      }));
+      renderInventory();
+    }
+
+    function renderInventory() {
+      dom.cardsContainer.innerHTML = '';
+      if (state.inventory.length === 0) {
+        dom.cardsContainer.innerHTML = `<span class="text-xs text-slate-500 italic">所有卡片已放入法陣中</span>`;
+        return;
+      }
+
+      state.inventory.forEach(card => {
+        const isPos = card.value >= 0;
+        const cardEl = document.createElement('div');
+        cardEl.className = `group relative px-3 py-2 rounded-xl font-mono font-bold text-sm shadow-md transition transform hover:-translate-y-1 cursor-pointer flex items-center gap-1.5 border ${
+          isPos
+            ? 'bg-gradient-to-b from-slate-800 to-amber-950/40 border-amber-500/50 text-amber-300'
+            : 'bg-gradient-to-b from-slate-800 to-sky-950/40 border-sky-500/50 text-sky-300'
+        }`;
+
+        cardEl.innerHTML = `
+          <span>${isPos ? '+' + card.value : card.value}</span>
+          <button class="btn-flip text-[10px] px-1 py-0.5 rounded bg-slate-700/80 hover:bg-slate-600 text-slate-200 transition" title="切換正負號">
+            ±
+          </button>
+        `;
+
+        cardEl.addEventListener('click', (e) => {
+          if (e.target.classList.contains('btn-flip')) {
+            card.value = -card.value;
+            sound.playClick();
+            renderInventory();
+            return;
+          }
+          if (state.slots.c1 === null) placeCardIntoSlot('c1', card);
+          else if (state.slots.c2 === null) placeCardIntoSlot('c2', card);
+          else placeCardIntoSlot('c1', card);
+        });
+
+        dom.cardsContainer.appendChild(cardEl);
+      });
+    }
+
+    function placeCardIntoSlot(slotKey, card) {
+      sound.playClick();
+      if (state.slots[slotKey] !== null) {
+        state.inventory.push({ id: `card-ret-${Date.now()}`, value: state.slots[slotKey] });
+      }
+
+      state.slots[slotKey] = card.value;
+      state.inventory = state.inventory.filter(c => c.id !== card.id);
+
+      const slotEl = slotKey === 'c1' ? dom.slotC1 : dom.slotC2;
+      slotEl.textContent = card.value >= 0 ? `+${card.value}` : `${card.value}`;
+      slotEl.classList.add('bg-slate-700');
+
+      renderInventory();
+      updateVerification();
+    }
+
+    [dom.slotC1, dom.slotC2].forEach((slotEl, idx) => {
+      slotEl.addEventListener('click', () => {
+        const slotKey = idx === 0 ? 'c1' : 'c2';
+        if (state.slots[slotKey] !== null) {
+          sound.playClick();
+          state.inventory.push({ id: `card-ret-${Date.now()}`, value: state.slots[slotKey] });
+          state.slots[slotKey] = null;
+          slotEl.textContent = '?';
+          slotEl.classList.remove('bg-slate-700', 'slot-match');
+          renderInventory();
+          updateVerification();
+        }
+      });
+    });
+
+    [dom.slotA1, dom.slotA2].forEach((slotEl) => {
+      slotEl.addEventListener('click', () => {
+        if (state.currentProblem.a1 !== state.currentProblem.a2) {
+          sound.playClick();
+          const tmp = state.slots.a1;
+          state.slots.a1 = state.slots.a2;
+          state.slots.a2 = tmp;
+          dom.slotA1.textContent = `${state.slots.a1}x`;
+          dom.slotA2.textContent = `${state.slots.a2}x`;
+          updateVerification();
+        }
+      });
+    });
+
+    function updateVerification() {
+      const { a1, a2, c1, c2 } = state.slots;
+      const prob = state.currentProblem;
+
+      if (c1 === null || c2 === null) {
+        dom.crossEquation.textContent = `(請填入常數項 c1 與 c2)`;
+        dom.crossEquation.className = "text-slate-400 font-semibold";
+        dom.crossResultBadge.textContent = "尚未齊全";
+        dom.crossResultBadge.className = "px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold";
+        dom.btnSlash.disabled = true;
+        dom.line1.setAttribute('stroke', '#38bdf8');
+        dom.line2.setAttribute('stroke', '#818cf8');
+        dom.slotC1.classList.remove('slot-match');
+        dom.slotC2.classList.remove('slot-match');
+        return;
+      }
+
+      const term1 = a1 * c2;
+      const term2 = a2 * c1;
+      const sumB = term1 + term2;
+      const prodC = c1 * c2;
+
+      dom.crossEquation.innerHTML = `<span class="text-cyan-300">${term1}x</span> + <span class="text-indigo-300">${term2}x</span> = <b class="text-white">${sumB}x</b>`;
+
+      const matchB = (sumB === prob.B);
+      const matchC = (prodC === prob.C);
+
+      if (matchB && matchC) {
+        dom.crossResultBadge.textContent = `⚡ 完美匹配 (${sumB}x)`;
+        dom.crossResultBadge.className = "px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500 font-bold animate-pulse";
+        dom.line1.setAttribute('stroke', '#10b981');
+        dom.line2.setAttribute('stroke', '#10b981');
+        dom.slotC1.classList.add('slot-match');
+        dom.slotC2.classList.add('slot-match');
+        dom.btnSlash.disabled = false;
+        sound.playMatchResonance();
+      } else {
+        dom.slotC1.classList.remove('slot-match');
+        dom.slotC2.classList.remove('slot-match');
+        dom.line1.setAttribute('stroke', '#ef4444');
+        dom.line2.setAttribute('stroke', '#ef4444');
+        dom.btnSlash.disabled = false;
+
+        if (!matchC) {
+          dom.crossResultBadge.textContent = `常數項不符 (${c1}×${c2} ≠ ${prob.C})`;
+          dom.crossResultBadge.className = "px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500 font-bold";
+        } else {
+          const diff = sumB - prob.B;
+          const hintTxt = diff > 0 ? `交乘和過大 (${sumB}x, 目標 ${prob.B}x)` : `交乘和過小 (${sumB}x, 目標 ${prob.B}x)`;
+          dom.crossResultBadge.textContent = hintTxt;
+          dom.crossResultBadge.className = "px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500 font-bold";
+        }
+      }
+    }
+
+    /* ========================================================
+       7. 斬擊發動與結算
+    ======================================================== */
+    dom.btnSlash.addEventListener('click', () => {
+      const { a1, a2, c1, c2 } = state.slots;
+      const prob = state.currentProblem;
+      const sumB = (a1 * c2) + (a2 * c1);
+      const prodC = c1 * c2;
+
+      if (sumB === prob.B && prodC === prob.C) {
+        sound.playSlash();
+
+        const slash = document.createElement('div');
+        slash.className = 'slash-effect';
+        dom.slashContainer.appendChild(slash);
+        setTimeout(() => slash.remove(), 500);
+
+        dom.battleCard.classList.add('shake-anim');
+        setTimeout(() => dom.battleCard.classList.remove('shake-anim'), 400);
+
+        state.combo++;
+        const gain = 100 + (state.combo * 20);
+        state.score += gain;
+        dom.comboText.textContent = state.combo;
+        dom.scoreText.textContent = state.score;
+
+        state.monsterHp = 0;
+        dom.hpBar.style.width = '0%';
+        dom.monsterHpLabel.textContent = 'HP 0/100 (已斬殺)';
+
+        const ans1 = `${a1 === 1 ? 'x' : a1 + 'x'} ${c1 >= 0 ? '+' + c1 : c1}`;
+        const ans2 = `${a2 === 1 ? 'x' : a2 + 'x'} ${c2 >= 0 ? '+' + c2 : c2}`;
+        const formulaStr = `(${ans1})(${ans2})`;
+
+        dom.feedbackNotice.className = "mt-2 p-3 rounded-xl text-sm font-bold text-center bg-emerald-950/80 border border-emerald-500 text-emerald-200 block";
+        dom.feedbackNotice.innerHTML = `
+          🎉 <b>斬擊成功！</b> 因式分解橫式：<br>
+          <span class="text-cyan-300 font-mono text-base">${formulaStr}</span>
+        `;
+
+        if (state.gameMode === 'adventure') {
+          if (state.activeStageIndex) {
+            const sid = state.activeStageIndex.id;
+            if (!state.completedStages[sid]) {
+              state.completedStages[sid] = true;
+              state.totalStars += 3;
+              localStorage.setItem('cross_factor_completed', JSON.stringify(state.completedStages));
+              localStorage.setItem('cross_factor_stars', state.totalStars.toString());
+            }
+          }
+          setTimeout(() => {
+            sound.playVictory();
+            dom.victoryFormula.textContent = `${formatPoly(prob.A, prob.B, prob.C)} = ${formulaStr}`;
+            dom.victoryModal.classList.remove('hidden');
+          }, 1100);
+        } else if (state.gameMode === 'rush') {
+          state.rushKills++;
+          dom.rushKills.textContent = state.rushKills;
+          setTimeout(() => nextRushProblem(), 1000);
+        } else if (state.gameMode === 'custom') {
+          setTimeout(() => alert(`🎉 太棒了！已成功破解自訂題目！\n答案為：${formulaStr}`), 800);
+        }
+      } else {
+        sound.playError();
+        dom.battleCard.classList.add('shake-anim');
+        setTimeout(() => dom.battleCard.classList.remove('shake-anim'), 400);
+
+        state.combo = 0;
+        dom.comboText.textContent = "0";
+        dom.feedbackNotice.className = "mt-2 p-3 rounded-xl text-xs font-semibold text-center bg-rose-950/80 border border-rose-500 text-rose-200 block";
+        if (prodC !== prob.C) {
+          dom.feedbackNotice.innerHTML = `❌ <b>常數項配對錯誤！</b> 右側相乘為 ${prodC}，但目標常數是 ${prob.C}！請挑選正確的因數對。`;
+        } else {
+          dom.feedbackNotice.innerHTML = `⚠️ <b>交叉相乘和不符！</b> 當前為 ${sumB}x，目標一次項是 ${prob.B}x！提示：換個正負號或因數組試試看！`;
+        }
+      }
+    });
+
+    dom.btnVictoryToMap.addEventListener('click', () => {
+      dom.victoryModal.classList.add('hidden');
+      switchView('map');
+    });
+    dom.btnVictoryNext.addEventListener('click', () => {
+      dom.victoryModal.classList.add('hidden');
+      if (state.activeStageIndex) {
+        const curId = state.activeStageIndex.id;
+        let allStages = [];
+        STAGE_CHAPTERS.forEach(ch => allStages.push(...ch.stages));
+        const idx = allStages.findIndex(s => s.id === curId);
+        if (idx !== -1 && idx + 1 < allStages.length) {
+          state.activeStageIndex = allStages[idx + 1];
+          loadStageProblem(state.activeStageIndex);
+          return;
+        }
+      }
+      switchView('map');
+    });
+
+    /* ========================================================
+       8. 60秒極限狂斬邏輯
+    ======================================================== */
+    function startRushMode() {
+      dom.rushTimerBar.classList.remove('hidden');
+      dom.currentStageBadge.textContent = "⏱️ 60秒無限狂斬挑戰";
+      state.rushTimeLeft = 60;
+      state.rushKills = 0;
+      state.score = 0;
+      state.combo = 0;
+      dom.rushSeconds.textContent = "60";
+      dom.rushKills.textContent = "0";
+      dom.scoreText.textContent = "0";
+      dom.comboText.textContent = "0";
+
+      if (state.rushTimer) clearInterval(state.rushTimer);
+      state.rushTimer = setInterval(() => {
+        state.rushTimeLeft--;
+        dom.rushSeconds.textContent = state.rushTimeLeft;
+        if (state.rushTimeLeft <= 0) {
+          clearInterval(state.rushTimer);
+          alert(`⏱️ 時間到！你在 60 秒內擊破了 ${state.rushKills} 隻魔怪，獲得最終得分 ${state.score}！`);
+          switchView('landing');
+        }
+      }, 1000);
+
+      nextRushProblem();
+    }
+
+    function nextRushProblem() {
+      let allStages = [];
+      STAGE_CHAPTERS.forEach(ch => allStages.push(...ch.stages));
+      const randStage = allStages[Math.floor(Math.random() * allStages.length)];
+      initProblemWithValues(randStage.a1, randStage.a2, randStage.c1, randStage.c2);
+    }
+
+    /* ========================================================
+       9. 💡 因數透視鏡 & 口訣秘笈
+    ======================================================== */
+    dom.btnHint.addEventListener('click', () => {
+      sound.playClick();
+      const prob = state.currentProblem;
+      dom.hintConstVal.textContent = prob.C >= 0 ? `+${prob.C}` : `${prob.C}`;
+      dom.hintMidVal.textContent = prob.B >= 0 ? `+${prob.B}` : `${prob.B}`;
+
+      const absC = Math.abs(prob.C);
+      const pairs = [];
+      for (let i = 1; i <= Math.sqrt(absC); i++) {
+        if (absC % i === 0) {
+          const j = absC / i;
+          if (prob.C > 0) {
+            pairs.push(`(+${i}) × (+${j}) = +${absC}`);
+            pairs.push(`(-${i}) × (-${j}) = +${absC}`);
+          } else {
+            pairs.push(`(+${i}) × (-${j}) = -${absC}`);
+            pairs.push(`(-${i}) × (+${j}) = -${absC}`);
+          }
+        }
+      }
+      dom.hintPairsList.innerHTML = pairs.map(p => `<div>${p}</div>`).join('');
+      dom.hintModal.classList.remove('hidden');
+    });
+
+    [dom.btnCloseHint, dom.btnConfirmHint].forEach(btn => {
+      btn.addEventListener('click', () => dom.hintModal.classList.add('hidden'));
+    });
+
+    dom.btnTutorial.addEventListener('click', () => {
+      sound.playClick();
+      dom.tutorialModal.classList.remove('hidden');
+    });
+    [dom.btnCloseTutorial, dom.btnGotTutorial].forEach(btn => {
+      btn.addEventListener('click', () => dom.tutorialModal.classList.add('hidden'));
+    });
+
+    /* ========================================================
+       10. 輔助操作：清空、正負號反轉、音效開關
+    ======================================================== */
+    dom.btnClear.addEventListener('click', () => {
+      sound.playClick();
+      if (state.slots.c1 !== null) {
+        state.inventory.push({ id: `c1-${Date.now()}`, value: state.slots.c1 });
+        state.slots.c1 = null;
+      }
+      if (state.slots.c2 !== null) {
+        state.inventory.push({ id: `c2-${Date.now()}`, value: state.slots.c2 });
+        state.slots.c2 = null;
+      }
+      dom.slotC1.textContent = '?';
+      dom.slotC2.textContent = '?';
+      renderInventory();
+      updateVerification();
+    });
+
+    dom.btnFlipAll.addEventListener('click', () => {
+      sound.playClick();
+      state.inventory.forEach(card => card.value = -card.value);
+      renderInventory();
+    });
+
+    dom.btnSound.addEventListener('click', () => {
+      sound.enabled = !sound.enabled;
+      dom.soundIcon.textContent = sound.enabled ? '🔊' : '🔇';
+    });
+
+    /* ========================================================
+       11. 教師自訂題庫與 URL Hash 分享
+    ======================================================== */
+    const teacherInputs = {
+      a1: document.getElementById('inputA1'),
+      c1: document.getElementById('inputC1'),
+      a2: document.getElementById('inputA2'),
+      c2: document.getElementById('inputC2'),
+      preview: document.getElementById('previewCustomPoly'),
+      shareUrl: document.getElementById('shareUrlInput'),
+      btnLaunch: document.getElementById('btnLaunchCustomProblem'),
+      btnCopy: document.getElementById('btnCopyShareUrl'),
+      copyStatus: document.getElementById('copyStatusText')
+    };
+
+    function updateTeacherShareUrl() {
+      const a1 = parseInt(teacherInputs.a1.value) || 1;
+      const c1 = parseInt(teacherInputs.c1.value) || 1;
+      const a2 = parseInt(teacherInputs.a2.value) || 1;
+      const c2 = parseInt(teacherInputs.c2.value) || 1;
+
+      const A = a1 * a2;
+      const B = a1 * c2 + a2 * c1;
+      const C = c1 * c2;
+
+      teacherInputs.preview.textContent = formatPoly(A, B, C);
+
+      const baseUrl = window.location.href.split('#')[0];
+      const shareUrl = `${baseUrl}#p=${a1},${c1},${a2},${c2}`;
+      teacherInputs.shareUrl.value = shareUrl;
+    }
+
+    [teacherInputs.a1, teacherInputs.c1, teacherInputs.a2, teacherInputs.c2].forEach(input => {
+      input.addEventListener('input', updateTeacherShareUrl);
+    });
+
+    teacherInputs.btnLaunch.addEventListener('click', () => {
+      const a1 = parseInt(teacherInputs.a1.value) || 1;
+      const c1 = parseInt(teacherInputs.c1.value) || 1;
+      const a2 = parseInt(teacherInputs.a2.value) || 1;
+      const c2 = parseInt(teacherInputs.c2.value) || 1;
+
+      state.gameMode = 'custom';
+      dom.currentStageBadge.textContent = "👩‍🏫 教師自訂特訓題";
+      dom.monsterName.textContent = "自訂試煉魔怪";
+      dom.monsterAvatar.textContent = "👹";
+
+      switchView('battle');
+      initProblemWithValues(a1, a2, c1, c2);
+    });
+
+    teacherInputs.btnCopy.addEventListener('click', () => {
+      navigator.clipboard.writeText(teacherInputs.shareUrl.value).then(() => {
+        teacherInputs.copyStatus.classList.remove('hidden');
+        setTimeout(() => teacherInputs.copyStatus.classList.add('hidden'), 2500);
+      });
+    });
+
+    function checkUrlHashCustomProblem() {
+      if (window.location.hash.startsWith('#p=')) {
+        const parts = window.location.hash.substring(3).split(',').map(Number);
+        if (parts.length === 4 && !parts.some(isNaN)) {
+          const [a1, c1, a2, c2] = parts;
+          state.gameMode = 'custom';
+          dom.currentStageBadge.textContent = "👩‍🏫 班級指定特訓題";
+          dom.monsterName.textContent = "班級試煉怪";
+          dom.monsterAvatar.textContent = "📜";
+          switchView('battle');
+          initProblemWithValues(a1, a2, c1, c2);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    if (!checkUrlHashCustomProblem()) {
+      switchView('landing');
+    }
+  </script>
+</body>
+</html>
